@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lógica de Programação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e12;
+    --panel:#14171d;
+    --panel-2:#191d24;
+    --line:#272c35;
+    --ink:#eef1f6;
+    --muted:#8992a3;
+    --muted-2:#5c6577;
+    --green:#5eea8d;
+    --amber:#f5a623;
+    --blue:#5b9df0;
+    --violet:#b98af0;
+    --red:#ef5a6f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:30px 20px 70px;}
+
+  .intro{display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:8px;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--green); margin:0 0 8px;}
+  h1.title{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:clamp(24px,3.8vw,36px); margin:0 0 10px; line-height:1.15; letter-spacing:-.01em;}
+  h1.title .prompt{color:var(--green);}
+  .subtitle{color:var(--muted); font-size:15.5px; max-width:600px; line-height:1.55; margin:0;}
+  .teacher-note{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px 17px;
+    max-width:330px; font-size:13.2px; color:var(--muted); line-height:1.6;
+  }
+  .teacher-note b{color:var(--ink);}
+  .teacher-note ol{margin:8px 0 0; padding-left:18px;}
+  .teacher-note li{margin-bottom:4px;}
+
+  section{margin-top:48px;}
+  .sec-head{display:flex; align-items:baseline; gap:10px; margin-bottom:6px; flex-wrap:wrap;}
+  .sec-num{font-family:'JetBrains Mono',monospace; color:var(--muted-2); font-size:13px;}
+  h2.sec-title{font-family:'JetBrains Mono',monospace; font-size:20px; margin:0; font-weight:700;}
+  .sec-sub{color:var(--muted); font-size:13.5px; margin:0 0 20px; max-width:640px; line-height:1.5;}
+
+  /* ---- PART A: sequence game ---- */
+  .seq-layout{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:760px){ .seq-layout{grid-template-columns:1fr;} }
+  .seq-pool, .seq-answer{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; min-height:260px;
+  }
+  .seq-label{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted-2); margin-bottom:12px;}
+  .seq-item{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px;
+    font-size:13.5px; cursor:pointer; transition:.15s; display:flex; align-items:center; gap:10px;
+  }
+  .seq-item:hover{border-color:var(--muted-2);}
+  .seq-item .num{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; color:var(--muted-2);
+    width:20px; flex-shrink:0;
+  }
+  .seq-answer .seq-item.correct{border-color:var(--green); background:rgba(94,234,141,.08);}
+  .seq-answer .seq-item.wrong{border-color:var(--red); background:rgba(239,90,111,.08);}
+  .seq-answer .seq-item .num{color:inherit;}
+  .seq-empty{color:var(--muted-2); font-size:12.5px; font-style:italic;}
+  .seq-controls{display:flex; gap:10px; margin-top:14px;}
+  .seq-btn{
+    padding:9px 16px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.03);
+    color:var(--ink); font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .seq-btn:hover{border-color:var(--muted-2);}
+  .seq-btn.primary{background:var(--green); color:#0a1f13; border-color:var(--green);}
+  .seq-result{margin-top:10px; font-size:13px; color:var(--muted); display:none;}
+  .seq-result.show{display:block;}
+
+  /* ---- PART B: flowchart simulator ---- */
+  .flow-box{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px;}
+  .flow-input-row{display:flex; gap:10px; align-items:center; margin-bottom:22px; flex-wrap:wrap;}
+  .flow-input-row input{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:9px 12px;
+    color:var(--ink); font-family:'JetBrains Mono',monospace; font-size:14px; width:110px;
+  }
+  .flow-input-row button{
+    padding:9px 18px; border-radius:8px; border:1px solid var(--green); background:var(--green);
+    color:#0a1f13; font-weight:700; font-size:12.5px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .flow-input-row label{font-size:13px; color:var(--muted);}
+
+  .flow-diagram{display:flex; flex-direction:column; align-items:center; gap:0; margin-bottom:20px;}
+  .fnode{
+    padding:11px 20px; font-family:'JetBrains Mono',monospace; font-size:13px; text-align:center;
+    border:1.5px solid var(--line); color:var(--muted); transition:.25s; max-width:260px;
+  }
+  .fnode.oval{border-radius:30px; background:var(--panel-2);}
+  .fnode.rect{border-radius:8px; background:var(--panel-2);}
+  .fnode.diamond{
+    background:var(--panel-2); transform:rotate(0deg); border-radius:10px; padding:14px 22px;
+  }
+  .fnode.active{border-color:var(--green); color:var(--ink); background:rgba(94,234,141,.1); box-shadow:0 0 0 3px rgba(94,234,141,.12);}
+  .farrow{color:var(--muted-2); font-size:16px; line-height:1;}
+  .fbranch-row{display:flex; gap:60px; align-items:flex-start; margin:2px 0;}
+  .fbranch{display:flex; flex-direction:column; align-items:center; opacity:.3; transition:.25s;}
+  .fbranch.taken{opacity:1;}
+  .fbranch-tag{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted-2); margin-bottom:4px;}
+
+  .step-controls{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .step-dots{display:flex; gap:6px;}
+  .step-dots span{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.2s;}
+  .step-dots span.active{background:var(--green); width:18px; border-radius:4px;}
+  .step-btns{display:flex; gap:8px;}
+  .step-btn{
+    padding:9px 16px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.03);
+    color:var(--ink); font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .step-btn:hover{border-color:var(--muted-2);}
+  .step-btn:disabled{opacity:.35; cursor:default;}
+  .step-btn.primary{background:var(--blue); color:#0a1626; border-color:var(--blue);}
+
+  /* ---- PART C: bug hunt ---- */
+  .bug-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:800px){ .bug-grid{grid-template-columns:1fr;} }
+  .bug-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px 17px;}
+  .bug-title{font-size:12.5px; color:var(--muted-2); margin:0 0 10px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.06em;}
+  .code-block{
+    background:#090a0d; border:1px solid var(--line); border-radius:8px; padding:10px 0; margin-bottom:12px;
+    font-family:'JetBrains Mono',monospace; font-size:12.3px; line-height:1.9; overflow-x:auto;
+  }
+  .code-line{padding:0 12px; display:flex; gap:10px; white-space:pre;}
+  .code-line .ln{color:var(--muted-2); width:16px; flex-shrink:0; text-align:right;}
+  .code-line .code{color:#c9d6e8;}
+  .bug-guess{display:flex; gap:6px; flex-wrap:wrap;}
+  .bg-btn{
+    padding:8px 11px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.02);
+    color:var(--ink); font-family:'JetBrains Mono',monospace; font-weight:600; font-size:11.8px; cursor:pointer; transition:.15s;
+  }
+  .bg-btn:hover{border-color:var(--muted-2);}
+  .bg-btn.correct{background:rgba(94,234,141,.14); border-color:var(--green); color:var(--green);}
+  .bg-btn.wrong{background:rgba(239,90,111,.12); border-color:var(--red); color:#f0a3ae; opacity:.6;}
+  .bg-btn:disabled{cursor:default;}
+  .bug-reveal{
+    margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); display:none;
+    font-size:12.8px; color:var(--muted); line-height:1.55;
+  }
+  .bug-reveal.show{display:block; animation:fadeIn .3s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---- poll ---- */
+  .poll-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:720px){ .poll-grid{grid-template-columns:1fr;} }
+  .poll-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; text-align:center;
+    cursor:pointer; transition:.15s; user-select:none;
+  }
+  .poll-card:hover{transform:translateY(-2px); border-color:var(--muted-2);}
+  .poll-card p{font-size:13.3px; margin:0 0 10px; line-height:1.5; color:var(--ink);}
+  .poll-count{font-family:'JetBrains Mono',monospace; font-size:34px; font-weight:800; color:var(--green);}
+  .poll-reset{
+    display:block; margin:18px auto 0; background:none; border:1px solid var(--line); color:var(--muted);
+    padding:8px 16px; border-radius:20px; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .poll-reset:hover{border-color:var(--muted-2); color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Atividade em grupo</p>
+      <h1 class="title"><span class="prompt">&gt;</span> Lógica de Programação</h1>
+      <p class="subtitle">Organizem um algoritmo, simulem um fluxograma na mão e caçem bugs em pseudocódigo — antes de escrever a primeira linha de código de verdade.</p>
+    </div>
+    <div class="teacher-note">
+      <b>Para o professor:</b> projete esta tela e siga a ordem.
+      <ol>
+        <li>Montem a sequência do algoritmo juntos</li>
+        <li>Testem o fluxograma com números diferentes</li>
+        <li>Encontrem o bug em cada pseudocódigo</li>
+        <li>Fechem com a votação rápida</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- PART A -->
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Isso é um algoritmo</h2></div>
+    <p class="sec-sub">Cliquem nos passos abaixo, na ordem que vocês acham correta, para preparar um macarrão instantâneo. Um algoritmo é só uma sequência de passos exatos — a ordem importa.</p>
+
+    <div class="seq-layout">
+      <div class="seq-pool">
+        <div class="seq-label">Passos embaralhados</div>
+        <div id="seqPool"></div>
+      </div>
+      <div class="seq-answer">
+        <div class="seq-label">Sua sequência</div>
+        <div id="seqAnswer"><p class="seq-empty">Cliquem nos passos ao lado para adicioná-los aqui.</p></div>
+        <div class="seq-controls">
+          <button class="seq-btn primary" id="checkSeqBtn">Verificar ordem</button>
+          <button class="seq-btn" id="resetSeqBtn">Reiniciar</button>
+        </div>
+        <div class="seq-result" id="seqResult"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART B -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">Simulador de fluxograma: par ou ímpar</h2></div>
+    <p class="sec-sub">Digitem um número, cliquem em "Simular" e avancem pelo fluxograma para ver exatamente o caminho que a lógica percorre.</p>
+
+    <div class="flow-box">
+      <div class="flow-input-row">
+        <label>Número:</label>
+        <input type="number" id="flowInput" value="7">
+        <button id="flowSimBtn">Simular</button>
+      </div>
+
+      <div class="flow-diagram" id="flowDiagram">
+        <div class="fnode oval" data-n="0">Início</div>
+        <div class="farrow">↓</div>
+        <div class="fnode rect" data-n="1">Ler número N</div>
+        <div class="farrow">↓</div>
+        <div class="fnode diamond" data-n="2">N % 2 == 0 ?</div>
+        <div class="farrow">↓</div>
+        <div class="fbranch-row">
+          <div class="fbranch" id="branchSim">
+            <div class="fbranch-tag">SIM</div>
+            <div class="fnode rect" data-n="3s">Exibir: "é par"</div>
+          </div>
+          <div class="fbranch" id="branchNao">
+            <div class="fbranch-tag">NÃO</div>
+            <div class="fnode rect" data-n="3n">Exibir: "é ímpar"</div>
+          </div>
+        </div>
+        <div class="farrow">↓</div>
+        <div class="fnode oval" data-n="4">Fim</div>
+      </div>
+
+      <div class="step-controls">
+        <div class="step-dots" id="flowDots"></div>
+        <div class="step-btns">
+          <button class="step-btn" id="flowPrevBtn">← Anterior</button>
+          <button class="step-btn primary" id="flowNextBtn">Próximo →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART C -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2 class="sec-title">Ache o bug</h2></div>
+    <p class="sec-sub">Cada pseudocódigo abaixo tem um erro de lógica. Em qual linha ele está?</p>
+    <div class="bug-grid" id="bugGrid"></div>
+  </section>
+
+  <!-- POLL -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2 class="sec-title">E vocês, turma?</h2></div>
+    <p class="sec-sub">Cliquem no card correspondente — cada clique é uma mão levantada.</p>
+    <div class="poll-grid">
+      <div class="poll-card" onclick="vote('pseudo')">
+        <p>Já escrevi um <b>algoritmo no papel</b> antes de programar</p>
+        <div class="poll-count" id="votePseudo">0</div>
+      </div>
+      <div class="poll-card" onclick="vote('loop')">
+        <p>Já criei um <b>loop infinito</b> sem querer</p>
+        <div class="poll-count" id="voteLoop">0</div>
+      </div>
+      <div class="poll-card" onclick="vote('debug')">
+        <p>Já passei <b>mais de 30 min</b> caçando um bug bobo</p>
+        <div class="poll-count" id="voteDebug">0</div>
+      </div>
+    </div>
+    <button class="poll-reset" onclick="resetVotes()">Zerar votação</button>
+  </section>
+
+</div>
+
+<script>
+/* ---- PART A: sequence game ---- */
+const CORRECT_SEQ = [
+  "Ferver a água",
+  "Colocar o macarrão na água fervendo",
+  "Aguardar o tempo indicado na embalagem",
+  "Escorrer a água",
+  "Adicionar o tempero",
+  "Misturar e servir"
+];
+let shuffled = [...CORRECT_SEQ].sort(() => Math.random() - 0.5);
+let answerSeq = [];
+
+const seqPool = document.getElementById('seqPool');
+const seqAnswer = document.getElementById('seqAnswer');
+const seqResult = document.getElementById('seqResult');
+
+function renderPool(){
+  seqPool.innerHTML = '';
+  shuffled.forEach(step => {
+    if(answerSeq.includes(step)) return;
+    const el = document.createElement('div');
+    el.className = 'seq-item';
+    el.textContent = step;
+    el.addEventListener('click', () => {
+      answerSeq.push(step);
+      renderPool();
+      renderAnswer();
+    });
+    seqPool.appendChild(el);
+  });
+}
+
+function renderAnswer(){
+  seqAnswer.innerHTML = '';
+  if(answerSeq.length === 0){
+    seqAnswer.innerHTML = '<p class="seq-empty">Cliquem nos passos ao lado para adicioná-los aqui.</p>';
+    seqAnswer.appendChild(controlsBlock());
+    return;
+  }
+  answerSeq.forEach((step, i) => {
+    const el = document.createElement('div');
+    el.className = 'seq-item';
+    el.innerHTML = `<span class="num">${i+1}</span><span>${step}</span>`;
+    seqAnswer.appendChild(el);
+  });
+  seqAnswer.appendChild(controlsBlock());
+}
+
+function controlsBlock(){
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div class="seq-controls">
+      <button class="seq-btn primary" id="checkSeqBtn">Verificar ordem</button>
+      <button class="seq-btn" id="resetSeqBtn">Reiniciar</button>
+    </div>
+    <div class="seq-result" id="seqResult"></div>
+  `;
+  div.querySelector('#checkSeqBtn').addEventListener('click', checkSequence);
+  div.querySelector('#resetSeqBtn').addEventListener('click', resetSequence);
+  return div;
+}
+
+function checkSequence(){
+  const items = seqAnswer.querySelectorAll('.seq-item');
+  let allCorrect = answerSeq.length === CORRECT_SEQ.length;
+  items.forEach((el, i) => {
+    if(answerSeq[i] === CORRECT_SEQ[i]) el.classList.add('correct');
+    else { el.classList.add('wrong'); allCorrect = false; }
+  });
+  const resultEl = seqAnswer.querySelector('#seqResult');
+  resultEl.classList.add('show');
+  resultEl.textContent = allCorrect
+    ? "✅ Sequência perfeita! Essa ordem exata, sem pular passos, é a essência de um algoritmo."
+    : "Quase lá — os passos em verde estão na posição certa. Reorganizem e verifiquem de novo (ou reiniciem).";
+}
+
+function resetSequence(){
+  shuffled = [...CORRECT_SEQ].sort(() => Math.random() - 0.5);
+  answerSeq = [];
+  renderPool();
+  renderAnswer();
+}
+
+renderPool();
+renderAnswer();
+
+/* ---- PART B: flowchart simulator ---- */
+const flowInput = document.getElementById('flowInput');
+const flowSimBtn = document.getElementById('flowSimBtn');
+const branchSim = document.getElementById('branchSim');
+const branchNao = document.getElementById('branchNao');
+const flowDots = document.getElementById('flowDots');
+const flowPrevBtn = document.getElementById('flowPrevBtn');
+const flowNextBtn = document.getElementById('flowNextBtn');
+
+let flowPath = [];
+let flowIdx = 0;
+
+function buildPath(){
+  const n = parseInt(flowInput.value) || 0;
+  const isEven = n % 2 === 0;
+  branchSim.classList.toggle('taken', isEven);
+  branchNao.classList.toggle('taken', !isEven);
+  flowPath = ['0','1','2', isEven ? '3s' : '3n', '4'];
+  flowIdx = 0;
+  renderFlowDots();
+  renderFlowStep();
+}
+
+function renderFlowDots(){
+  flowDots.innerHTML = '';
+  flowPath.forEach((_, i) => {
+    const d = document.createElement('span');
+    if(i === flowIdx) d.classList.add('active');
+    flowDots.appendChild(d);
+  });
+}
+
+function renderFlowStep(){
+  document.querySelectorAll('.fnode').forEach(n => n.classList.remove('active'));
+  const current = flowPath[flowIdx];
+  const node = document.querySelector(`.fnode[data-n="${current}"]`);
+  if(node) node.classList.add('active');
+
+  const n = parseInt(flowInput.value) || 0;
+  if(current === '1') node.textContent = `Ler número N  →  N = ${n}`;
+  if(current === '2') node.textContent = `N % 2 == 0 ?  →  ${n % 2 === 0 ? 'verdadeiro' : 'falso'}`;
+
+  [...flowDots.children].forEach((d, i) => d.classList.toggle('active', i === flowIdx));
+  flowPrevBtn.disabled = flowIdx === 0;
+  flowNextBtn.disabled = flowIdx === flowPath.length - 1;
+  flowNextBtn.textContent = flowIdx === flowPath.length - 1 ? 'Fim ✓' : 'Próximo →';
+}
+
+flowSimBtn.addEventListener('click', buildPath);
+flowPrevBtn.addEventListener('click', () => { if(flowIdx>0){ flowIdx--; renderFlowStep(); } });
+flowNextBtn.addEventListener('click', () => { if(flowIdx<flowPath.length-1){ flowIdx++; renderFlowStep(); } });
+buildPath();
+
+/* ---- PART C: bug hunt ---- */
+const BUGS = [
+  {
+    title: "Somar de 1 até 10",
+    lines: [
+      "soma = 0",
+      "para i de 1 até 9 faça",
+      "    soma = soma + i",
+      "fim para",
+      "escreva soma"
+    ],
+    options: [2, 3, 5],
+    correct: 2,
+    explain: "O laço vai só até 9, então o número 10 nunca entra na soma. Deveria ser 'para i de 1 até 10 faça'."
+  },
+  {
+    title: "Par ou ímpar",
+    lines: [
+      "leia numero",
+      "se numero % 2 == 0 então",
+      '    escreva "é ímpar"',
+      "senão",
+      '    escreva "é par"',
+      "fim se"
+    ],
+    options: [2, 3, 5],
+    correct: 3,
+    explain: "As mensagens estão trocadas: quando o resto da divisão por 2 é zero, o número é PAR, não ímpar."
+  },
+  {
+    title: "Contagem regressiva",
+    lines: [
+      "contador = 0",
+      "enquanto contador < 5 faça",
+      "    escreva contador",
+      "fim enquanto"
+    ],
+    options: [1, 2, 3],
+    correct: 3,
+    explain: "Falta incrementar 'contador' dentro do laço. Sem isso, a condição nunca deixa de ser verdadeira — loop infinito."
+  },
+  {
+    title: "Somar idades",
+    lines: [
+      "leia idade",
+      "soma = soma + idade",
+      "escreva soma"
+    ],
+    options: [1, 2, 3],
+    correct: 2,
+    explain: "A variável 'soma' é usada antes de existir com um valor inicial. Faltou 'soma = 0' antes dessa linha."
+  }
+];
+
+const bugGrid = document.getElementById('bugGrid');
+BUGS.forEach(b => {
+  const card = document.createElement('div');
+  card.className = 'bug-card';
+  card.innerHTML = `
+    <p class="bug-title">${b.title}</p>
+    <div class="code-block">
+      ${b.lines.map((l,i) => `<div class="code-line"><span class="ln">${i+1}</span><span class="code">${l}</span></div>`).join('')}
+    </div>
+    <div class="bug-guess">
+      ${b.options.map(o => `<button class="bg-btn" data-g="${o}">linha ${o}</button>`).join('')}
+    </div>
+    <div class="bug-reveal">${b.explain}</div>
+  `;
+  card.querySelectorAll('.bg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      card.querySelectorAll('.bg-btn').forEach(bb => {
+        bb.disabled = true;
+        if(parseInt(bb.dataset.g) === b.correct) bb.classList.add('correct');
+        else if(bb === btn) bb.classList.add('wrong');
+      });
+      card.querySelector('.bug-reveal').classList.add('show');
+    });
+  });
+  bugGrid.appendChild(card);
+});
+
+/* ---- poll ---- */
+let votes = {pseudo:0, loop:0, debug:0};
+function vote(k){
+  votes[k]++;
+  const map = {pseudo:'votePseudo', loop:'voteLoop', debug:'voteDebug'};
+  document.getElementById(map[k]).textContent = votes[k];
+}
+function resetVotes(){
+  votes = {pseudo:0, loop:0, debug:0};
+  document.getElementById('votePseudo').textContent = 0;
+  document.getElementById('voteLoop').textContent = 0;
+  document.getElementById('voteDebug').textContent = 0;
+}
+</script>
+</body>
+</html>
